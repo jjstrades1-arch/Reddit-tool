@@ -1,0 +1,50 @@
+==========================================================
+  Reddit-Tool Suite  -  Simple Start (Windows)
+==========================================================
+
+You only need to do STEP 1 once.
+
+----------------------------------------------------------
+STEP 1 -- Install (one time)
+----------------------------------------------------------
+  Double-click:   setup.bat
+
+  If it says Python is missing:
+    1. Go to  https://www.python.org/downloads/
+    2. Download and run the installer.
+    3. TICK the box "Add Python to PATH".
+    4. Double-click  setup.bat  again.
+
+----------------------------------------------------------
+STEP 2 -- Open the dashboard
+----------------------------------------------------------
+  Double-click:   start.bat
+
+  Your web browser opens at  http://127.0.0.1:8000
+  (Keep the little black window open while you use it.
+   Close it to stop.)
+
+----------------------------------------------------------
+STEP 3 -- Add your keys (only when you're ready)
+----------------------------------------------------------
+  To connect your real Reddit and Patreon accounts:
+    1. Open the file named  .env  with Notepad.
+    2. Paste your keys where shown (instructions are inside).
+    3. Save the file.
+
+  - Reddit keys:   https://www.reddit.com/prefs/apps  (make a "script" app)
+  - Patreon key:   https://www.patreon.com/portal/registration/register-clients
+
+  You can explore the dashboard WITHOUT keys first.
+
+----------------------------------------------------------
+OPTIONAL -- Let it run on its own
+----------------------------------------------------------
+  Double-click:   automate.bat
+
+  This posts your scheduled chapters, refreshes your stats,
+  and checks for alerts automatically. Needs your keys (Step 3).
+
+==========================================================
+That's it. Most days you'll just double-click  start.bat.
+==========================================================
