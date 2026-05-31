@@ -389,6 +389,59 @@ def create_app() -> FastAPI:
             )
         return back("/tools", msg=f"Saved r/{name}.")
 
+    # ----------------------------------------------------------------- #
+    # Settings (edit .env from the browser)
+    # ----------------------------------------------------------------- #
+    @app.get("/settings", response_class=HTMLResponse)
+    def settings_page(request: Request):
+        cfg = get_settings()
+        cur = {
+            "home_subreddit": cfg.home_subreddit,
+            "public_base_url": cfg.public_base_url,
+            "reddit_client_id": cfg.reddit_client_id,
+            "reddit_username": cfg.reddit_username,
+            "reddit_user_agent": cfg.reddit_user_agent,
+        }
+        which = {
+            "reddit": bool(cfg.reddit_client_id and cfg.reddit_client_secret),
+            "reddit_secret": bool(cfg.reddit_client_secret),
+            "reddit_password": bool(cfg.reddit_password),
+            "patreon": bool(cfg.patreon_access_token),
+        }
+        return render(request, "settings.html", "settings", cur=cur, set=which)
+
+    @app.post("/settings/save")
+    def settings_save(
+        home_subreddit: str = Form(""),
+        public_base_url: str = Form(""),
+        reddit_client_id: str = Form(""),
+        reddit_client_secret: str = Form(""),
+        reddit_username: str = Form(""),
+        reddit_password: str = Form(""),
+        reddit_user_agent: str = Form(""),
+        patreon_access_token: str = Form(""),
+    ):
+        from ...core.config import get_settings as _gs
+        from ...core.envfile import update_env
+
+        # Plain fields: update when provided. Secret fields: only when non-blank
+        # (blank means "keep the saved one").
+        candidates = {
+            "HOME_SUBREDDIT": home_subreddit,
+            "PUBLIC_BASE_URL": public_base_url,
+            "REDDIT_CLIENT_ID": reddit_client_id,
+            "REDDIT_USERNAME": reddit_username,
+            "REDDIT_USER_AGENT": reddit_user_agent,
+            "REDDIT_CLIENT_SECRET": reddit_client_secret,
+            "REDDIT_PASSWORD": reddit_password,
+            "PATREON_ACCESS_TOKEN": patreon_access_token,
+        }
+        updates = {k: v.strip() for k, v in candidates.items() if v.strip()}
+        if updates:
+            update_env(updates)
+            _gs.cache_clear()  # pick up the new values on the next request
+        return back("/settings", msg="Settings saved.")
+
     return app
 
 

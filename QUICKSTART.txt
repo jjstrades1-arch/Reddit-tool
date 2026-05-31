@@ -2,7 +2,17 @@
   Reddit-Tool Suite  -  Simple Start (Windows)
 ==========================================================
 
-You only need to do STEP 1 once.
+You only need to do STEP 0 and STEP 1 once.
+
+----------------------------------------------------------
+STEP 0 -- EXTRACT THE ZIP FIRST  (important!)
+----------------------------------------------------------
+  Do NOT run anything from inside the ZIP.
+    1. Open your Downloads folder.
+    2. RIGHT-CLICK the Reddit-tool ZIP file.
+    3. Choose "Extract All..."  then  "Extract".
+    4. Open the new folder that appears.
+  Everything below happens in that extracted folder.
 
 ----------------------------------------------------------
 STEP 1 -- Install (one time)
@@ -27,15 +37,13 @@ STEP 2 -- Open the dashboard
 ----------------------------------------------------------
 STEP 3 -- Add your keys (only when you're ready)
 ----------------------------------------------------------
-  To connect your real Reddit and Patreon accounts:
-    1. Open the file named  .env  with Notepad.
-    2. Paste your keys where shown (instructions are inside).
-    3. Save the file.
+  EASIEST WAY: in the website, click the "Settings" tab at the
+  top, paste your keys into the boxes, and click Save.
 
   - Reddit keys:   https://www.reddit.com/prefs/apps  (make a "script" app)
   - Patreon key:   https://www.patreon.com/portal/registration/register-clients
 
-  You can explore the dashboard WITHOUT keys first.
+  You can explore the website WITHOUT keys first.
 
 ----------------------------------------------------------
 OPTIONAL -- Let it run on its own

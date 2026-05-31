@@ -17,7 +17,7 @@ def _client():
 
 def test_all_pages_load(settings, session):
     client = _client()
-    for path in ("/", "/chapters", "/links", "/polls", "/comments", "/tools"):
+    for path in ("/", "/chapters", "/links", "/polls", "/comments", "/tools", "/settings"):
         assert client.get(path).status_code == 200
 
 
@@ -137,3 +137,49 @@ def test_add_cross_promo_target(settings, session):
     )
     assert r.status_code == 200
     assert "WritingPrompts" in r.text
+
+
+def test_settings_save_writes_env(settings, session, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    client = _client()
+    r = client.post(
+        "/settings/save",
+        data={
+            "home_subreddit": "MyEpic",
+            "reddit_client_id": "abc123",
+            "patreon_access_token": "tok-xyz",
+        },
+    )
+    assert r.status_code == 200
+    assert "Settings saved" in r.text
+
+    from redditsuite.core.envfile import read_env
+
+    env = read_env(tmp_path / ".env")
+    assert env["HOME_SUBREDDIT"] == "MyEpic"
+    assert env["REDDIT_CLIENT_ID"] == "abc123"
+    assert env["PATREON_ACCESS_TOKEN"] == "tok-xyz"
+
+
+def test_settings_blank_secret_is_not_written(settings, session, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    client = _client()
+    client.post("/settings/save", data={"home_subreddit": "OnlyThis"})
+    from redditsuite.core.envfile import read_env
+
+    env = read_env(tmp_path / ".env")
+    assert env["HOME_SUBREDDIT"] == "OnlyThis"
+    assert "REDDIT_CLIENT_SECRET" not in env  # blank secrets are skipped
+
+
+def test_envfile_preserves_comments_and_keys(tmp_path):
+    from redditsuite.core import envfile
+
+    p = tmp_path / ".env"
+    p.write_text("# my settings\nHOME_SUBREDDIT=old\nKEEP=yes\n")
+    envfile.update_env({"HOME_SUBREDDIT": "new", "NEWKEY": "1"}, path=p)
+    data = envfile.read_env(p)
+    assert data["HOME_SUBREDDIT"] == "new"
+    assert data["KEEP"] == "yes"
+    assert data["NEWKEY"] == "1"
+    assert "# my settings" in p.read_text()

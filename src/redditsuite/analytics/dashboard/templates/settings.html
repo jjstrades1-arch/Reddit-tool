@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Settings — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <h1>Settings</h1>
+  <p class="muted">Connect your accounts. Secret boxes show whether a key is already saved —
+     leave them blank to keep the current one. Changes take effect right away; restart the app
+     if something doesn't update.</p>
+
+  <form method="post" action="/settings/save">
+    <div class="card">
+      <h3>Your story</h3>
+      <label>Home subreddit (no r/)</label>
+      <input name="home_subreddit" value="{{ cur.home_subreddit }}" placeholder="YourStorySub" />
+      <label>Public web address for your tracked links</label>
+      <input name="public_base_url" value="{{ cur.public_base_url }}" placeholder="http://localhost:8000" />
+      <p class="muted">Leave as-is unless you've set up a custom domain.</p>
+    </div>
+
+    <div class="card">
+      <h3>Reddit account
+        {% if set.reddit %}<span class="pill pos">connected</span>{% else %}<span class="pill">not set</span>{% endif %}
+      </h3>
+      <p class="muted">Create a "script" app at
+        <a href="https://www.reddit.com/prefs/apps" target="_blank">reddit.com/prefs/apps</a> to get an ID and secret.</p>
+      <div class="grid" style="gap:1rem;margin:0">
+        <div><label>Client ID</label><input name="reddit_client_id" value="{{ cur.reddit_client_id }}" /></div>
+        <div><label>Client secret</label><input name="reddit_client_secret" type="password" placeholder="{{ '••••••• (saved)' if set.reddit_secret else '' }}" /></div>
+      </div>
+      <div class="grid" style="gap:1rem;margin:0">
+        <div><label>Reddit username</label><input name="reddit_username" value="{{ cur.reddit_username }}" /></div>
+        <div><label>Reddit password</label><input name="reddit_password" type="password" placeholder="{{ '••••••• (saved)' if set.reddit_password else '' }}" /></div>
+      </div>
+      <label>App name shown to Reddit</label>
+      <input name="reddit_user_agent" value="{{ cur.reddit_user_agent }}" placeholder="redditsuite/0.1 by u/yourname" />
+    </div>
+
+    <div class="card">
+      <h3>Patreon account
+        {% if set.patreon %}<span class="pill pos">connected</span>{% else %}<span class="pill">not set</span>{% endif %}
+      </h3>
+      <p class="muted">Get a Creator Access Token at
+        <a href="https://www.patreon.com/portal/registration/register-clients" target="_blank">Patreon's client portal</a>.</p>
+      <label>Patreon access token</label>
+      <input name="patreon_access_token" type="password" placeholder="{{ '••••••• (saved)' if set.patreon else '' }}" />
+    </div>
+
+    <button type="submit">Save settings</button>
+  </form>
+{% endblock %}
