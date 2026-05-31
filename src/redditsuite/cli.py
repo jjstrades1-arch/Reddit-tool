@@ -52,7 +52,11 @@ _CLI_MODULES = {
         "redditsuite.conversion.polls",
         "redditsuite.conversion.teaser_gen",
     ),
-    analytics_app: ("redditsuite.analytics.collectors",),
+    analytics_app: (
+        "redditsuite.analytics.collectors",
+        "redditsuite.analytics.alerts",
+        "redditsuite.analytics.export",
+    ),
 }
 
 

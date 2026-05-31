@@ -26,8 +26,22 @@ shared core; each tool plugs in rather than living as a disconnected script.
 | | `polls` | Member voting: plot/naming polls, free-form suggestions, one vote per member. |
 | | `teaser_gen` | Draft FOMO "members chose X" posts (you review & post). |
 | **Analytics** | `collectors` | Snapshot Reddit + Patreon metrics over time. |
-| | `sentiment` | Score comment sentiment (VADER). |
+| | `sentiment` | Score comment sentiment (VADER by default; optional transformer backend). |
 | | `funnel` + dashboard | Tie upvotes → clicks → conversions → patrons → MRR in one view. |
+| | `alerts` | Flag MRR drops, churn spikes, and dead campaigns. |
+| | `export` | Dump funnel + metrics to CSV/JSON for spreadsheets/BI. |
+
+### The dashboard
+
+`redditsuite analytics dashboard` serves a single funnel view (and the click
+redirect) with panels for:
+
+- **Funnel stages** — posts → upvotes → clicks → conversions → patrons → MRR, with stage-to-stage rates.
+- **Anomaly banner** — live churn/MRR/dead-campaign alerts at the top.
+- **Patreon trend** + **churn & tier mix**.
+- **Best posting windows** heatmap (UTC weekday × hour) and **A/B title winners**.
+- **Clicks by campaign** and **attribution-confidence** breakdown.
+- **Comment-sentiment** strip with flagged high-value comments.
 
 ## Compliance, by design
 
@@ -59,9 +73,17 @@ redditsuite conversion poll-create --question "Which door?" -o "Left" -o "Right"
 # Run the funnel dashboard + click-redirect service
 redditsuite analytics dashboard      # http://127.0.0.1:8000
 
-# Run the background scheduler (posting, metric collection, attribution)
+# Check anomalies and export data
+redditsuite analytics alerts
+redditsuite analytics export --format csv --out ./exports
+
+# Run the background scheduler (posting, metric collection, attribution, alerts)
 redditsuite run
 ```
+
+To try the optional transformer sentiment backend, install `transformers`
+yourself and set `SENTIMENT_BACKEND=transformer` in `.env` (it falls back to
+VADER if the library is unavailable).
 
 Run `redditsuite --help` (and `redditsuite <group> --help`) to see every command.
 

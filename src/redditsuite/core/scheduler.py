@@ -20,6 +20,7 @@ log = get_logger(__name__)
 _JOB_MODULES = (
     "redditsuite.growth.post_scheduler",
     "redditsuite.analytics.collectors",
+    "redditsuite.analytics.alerts",
     "redditsuite.conversion.attribution",
 )
 

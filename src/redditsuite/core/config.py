@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     # --- Privacy ---
     click_hash_salt: str = "change-me"
 
+    # Sentiment backend: "vader" (default, no extra deps) or "transformer"
+    # (requires a separately-installed transformers pipeline; falls back to
+    # VADER if unavailable).
+    sentiment_backend: str = "vader"
+
     # Optional tier-weighted voting (off by default -- one member, one vote).
     enable_tier_weighted_votes: bool = Field(default=False)
 
