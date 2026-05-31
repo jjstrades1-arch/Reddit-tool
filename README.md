@@ -46,6 +46,23 @@ click redirect) at `http://127.0.0.1:8000`. No command line needed for daily use
 Windows users can skip the command line entirely — see `QUICKSTART.txt`
 (`setup.bat` then `start.bat`).
 
+### Works without Reddit API keys (no-login mode)
+
+You don't need a Reddit app/login to get most of the value. The suite can read
+**public** Reddit data (the JSON Reddit serves to anyone) to recover upvotes,
+comment counts, and comments for your own posts:
+
+- **Posting:** on the **Chapters** page, click **"Post on Reddit"** — it opens
+  Reddit's compose page with your title and text pre-filled. Submit it yourself,
+  then paste the post's link back to connect it.
+- **Stats & comments:** click **"Refresh from Reddit (no login)"** to pull each
+  linked post's score/comments into the dashboard (heatmap, A/B winners,
+  upvotes, comment queue + sentiment) — all without credentials.
+
+This uses read-only public endpoints at low volume with a descriptive
+user-agent (`core/reddit_public.py`). Connecting real Reddit keys in **Settings**
+adds full automation (hands-off posting and scheduled stat collection).
+
 ## Compliance, by design
 
 Reddit and Patreon prohibit spam, vote manipulation and fake engagement. Those

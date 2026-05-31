@@ -2,7 +2,8 @@
 {% block title %}Chapters — Reddit-Tool Suite{% endblock %}
 {% block content %}
   <h1>Chapters</h1>
-  <p class="muted">Schedule a story chapter to post on r/{{ home_sub }}. Times are in UTC.</p>
+  <p class="muted">Schedule a chapter, then post it to r/{{ home_sub }}. No Reddit login needed —
+     post it yourself in two clicks and paste the link back to track its stats. Times are UTC.</p>
 
   <div class="grid">
     <div class="card">
@@ -23,27 +24,44 @@
     </div>
 
     <div class="card">
-      <h3>Post anything that's due now</h3>
-      <p class="muted">Submits scheduled chapters whose time has arrived. Needs your Reddit keys in <code>.env</code>.</p>
-      <form method="post" action="/chapters/run-due">
-        <button type="submit">Post due chapters now</button>
+      <h3>Update stats from Reddit</h3>
+      <p class="muted">Pulls current upvotes &amp; comments for any chapter you've linked below.
+         <strong>No login or keys required.</strong></p>
+      <form method="post" action="/chapters/refresh-public">
+        <button type="submit">Refresh from Reddit (no login)</button>
       </form>
+      <p class="muted" style="margin-top:1rem">Have Reddit keys connected? You can also use
+         Tools → "Post due chapters" for full automation.</p>
     </div>
   </div>
 
   <div class="card">
     <h3>Your chapters</h3>
     <table>
-      <tr><th>#</th><th>Title</th><th>Status</th><th>Scheduled (UTC)</th><th>Link</th></tr>
+      <tr><th>#</th><th>Title</th><th>Status</th><th>Upvotes</th><th>Comments</th><th>Post / Link</th></tr>
       {% for p in posts %}
       <tr>
         <td>{{ p.chapter_no if p.chapter_no is not none else "—" }}</td>
         <td>{{ p.title }}</td>
-        <td><span class="pill">{{ p.status.value }}</span></td>
-        <td>{{ p.scheduled_at.strftime("%Y-%m-%d %H:%M") if p.scheduled_at else "—" }}</td>
-        <td>{% if p.permalink %}<a href="https://reddit.com{{ p.permalink }}" target="_blank">view</a>{% else %}—{% endif %}</td>
+        <td><span class="pill">{{ p.status }}</span></td>
+        <td>{{ p.score if p.score is not none else "—" }}</td>
+        <td>{{ p.num_comments if p.num_comments is not none else "—" }}</td>
+        <td>
+          {% if p.reddit_id %}
+            <a href="https://reddit.com{{ p.permalink }}" target="_blank">view on Reddit</a>
+          {% else %}
+            <a class="btn" href="{{ p.submit_url }}" target="_blank" style="margin:0 0 .4rem">1) Post on Reddit</a>
+            <form method="post" action="/chapters/{{ p.id }}/reddit-link" style="display:flex; gap:.4rem">
+              <input name="link" placeholder="2) paste the Reddit link here" style="flex:1" />
+              <button type="submit" class="secondary" style="margin:0">Save</button>
+            </form>
+          {% endif %}
+        </td>
       </tr>
-      {% else %}<tr><td colspan="5" class="muted">No chapters yet. Schedule one above.</td></tr>{% endfor %}
+      {% else %}<tr><td colspan="6" class="muted">No chapters yet. Schedule one above.</td></tr>{% endfor %}
     </table>
+    <p class="muted" style="margin-top:.8rem">How posting works without login: click <em>“Post on Reddit”</em>
+       (it opens Reddit with your title &amp; text filled in), hit submit on Reddit, then copy that post's
+       link and paste it in the box to connect it. After that, “Refresh from Reddit” tracks its stats.</p>
   </div>
 {% endblock %}

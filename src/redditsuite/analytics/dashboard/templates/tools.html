@@ -5,9 +5,17 @@
 
   <div class="grid">
     <div class="card">
-      <h3>Refresh stats</h3>
-      <p class="muted">Pull the latest numbers from Reddit &amp; Patreon. Needs your keys in <code>.env</code>.</p>
-      <form method="post" action="/tools/collect"><button type="submit">Refresh now</button></form>
+      <h3>Refresh from Reddit (no login)</h3>
+      <p class="muted">Pull upvotes &amp; comments for chapters you've linked on the Chapters page.
+         No keys needed.</p>
+      <form method="post" action="/chapters/refresh-public"><button type="submit">Refresh from Reddit</button></form>
+    </div>
+
+    <div class="card">
+      <h3>Full refresh (with keys)</h3>
+      <p class="muted">Pull Reddit stats <em>and</em> Patreon numbers automatically.
+         Needs your keys saved in Settings.</p>
+      <form method="post" action="/tools/collect"><button type="submit" class="secondary">Refresh with keys</button></form>
     </div>
 
     <div class="card">

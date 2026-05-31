@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from redditsuite.analytics.dashboard.app import create_app
 from redditsuite.core import repositories as repo
-from redditsuite.core.models import Comment, Poll, PollOption, PollStatus
+from redditsuite.core.models import Comment, Poll, PollOption, PollStatus, Post
 from redditsuite.growth import engagement_monitor
 
 
@@ -137,6 +137,34 @@ def test_add_cross_promo_target(settings, session):
     )
     assert r.status_code == 200
     assert "WritingPrompts" in r.text
+
+
+def test_link_reddit_post_and_refresh_no_login(settings, session, monkeypatch):
+    # Schedule a chapter, then attach a Reddit link to it (as if posted manually).
+    client = _client()
+    client.post(
+        "/chapters/schedule",
+        data={"title": "Ch 1", "when": "2026-06-02T17:00", "body": "hi", "chapter": "1"},
+    )
+    post = session.scalars(select(Post)).first()
+
+    r = client.post(
+        f"/chapters/{post.id}/reddit-link",
+        data={"link": "https://www.reddit.com/r/MyStory/comments/abc12/ch_1/"},
+    )
+    assert "Linked" in r.text
+    session.expire_all()
+    assert session.get(Post, post.id).reddit_id == "abc12"
+
+    # Refresh stats from "public Reddit" with the network calls stubbed out.
+    import redditsuite.core.reddit_public as rp
+
+    monkeypatch.setattr(rp, "fetch_post", lambda _id: {
+        "score": 55, "num_comments": 4, "upvote_ratio": 0.9, "permalink": "/r/MyStory/x/"
+    })
+    monkeypatch.setattr(rp, "fetch_comments", lambda _id: [])
+    r = client.post("/chapters/refresh-public")
+    assert "Updated 1 post" in r.text
 
 
 def test_settings_save_writes_env(settings, session, tmp_path, monkeypatch):

@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 from uuid import uuid4
 
 from fastapi import FastAPI, Form, Request
@@ -21,7 +22,16 @@ from fastapi.templating import Jinja2Templates
 from ...core import repositories as repo
 from ...core.config import get_settings
 from ...core.db import session_scope
-from ...core.models import CTASnippet, Poll, PollKind, PollStatus, Post
+from ...core.models import (
+    CTASnippet,
+    Poll,
+    PollKind,
+    PollStatus,
+    Post,
+    PostMetric,
+    PostStatus,
+    utcnow,
+)
 from ...services.utm_redirect import router as redirect_router
 from .. import alerts, funnel
 from ..collectors import collect_post_metrics, sync_patreon
@@ -96,10 +106,72 @@ def create_app() -> FastAPI:
         from sqlalchemy import select
 
         with session_scope() as session:
-            posts = session.scalars(
+            sub = repo.get_home_subreddit(session)
+            rows = []
+            for p in session.scalars(
                 select(Post).order_by(Post.scheduled_at.desc().nullslast(), Post.id.desc())
-            ).all()
-            return render(request, "chapters.html", "chapters", posts=posts)
+            ):
+                latest = session.scalar(
+                    select(PostMetric)
+                    .where(PostMetric.post_id == p.id)
+                    .order_by(PostMetric.captured_at.desc())
+                    .limit(1)
+                )
+                submit_url = (
+                    f"https://www.reddit.com/r/{sub.name}/submit?title="
+                    f"{quote(p.title)}&text={quote(p.body or '')}"
+                )
+                rows.append(
+                    {
+                        "id": p.id,
+                        "title": p.title,
+                        "chapter_no": p.chapter_no,
+                        "status": p.status.value,
+                        "scheduled_at": p.scheduled_at,
+                        "permalink": p.permalink,
+                        "reddit_id": p.reddit_id,
+                        "submit_url": submit_url,
+                        "score": latest.score if latest else None,
+                        "num_comments": latest.num_comments if latest else None,
+                    }
+                )
+            return render(request, "chapters.html", "chapters", posts=rows, sub=sub.name)
+
+    @app.post("/chapters/{post_id}/reddit-link")
+    def chapter_set_link(post_id: int, link: str = Form(...)):
+        from ...core.reddit_public import RedditPublicError, extract_post_id
+
+        with session_scope() as session:
+            post = session.get(Post, post_id)
+            if not post:
+                return back("/chapters", error="Chapter not found.")
+            try:
+                post.reddit_id = extract_post_id(link)
+            except RedditPublicError as exc:
+                return back("/chapters", error=str(exc))
+            if link.strip().startswith("http"):
+                post.permalink = link.strip()
+            post.status = PostStatus.POSTED
+            if post.submitted_at is None:
+                post.submitted_at = utcnow()
+        return back("/chapters", msg="Linked! Use 'Refresh from Reddit' to pull its stats.")
+
+    @app.post("/chapters/refresh-public")
+    def chapters_refresh_public():
+        from ...analytics.public_collect import refresh_from_public
+
+        try:
+            with session_scope() as session:
+                res = refresh_from_public(session)
+        except Exception as exc:  # noqa: BLE001 - friendly surface
+            return back("/chapters", error=f"Couldn't reach Reddit: {exc}")
+        return back(
+            "/chapters",
+            msg=(
+                f"Updated {res['updated']} post(s) and found "
+                f"{res['new_comments']} new comment(s) — no login needed."
+            ),
+        )
 
     @app.post("/chapters/schedule")
     def chapters_schedule(
