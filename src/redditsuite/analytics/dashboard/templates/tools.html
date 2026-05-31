@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Tools — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <h1>Tools</h1>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Refresh stats</h3>
+      <p class="muted">Pull the latest numbers from Reddit &amp; Patreon. Needs your keys in <code>.env</code>.</p>
+      <form method="post" action="/tools/collect"><button type="submit">Refresh now</button></form>
+    </div>
+
+    <div class="card">
+      <h3>Find best posting times</h3>
+      <p class="muted">Analyzes your past posts to fill the dashboard heatmap.</p>
+      <form method="post" action="/tools/analyze-timing"><button type="submit">Analyze timing</button></form>
+    </div>
+
+    <div class="card">
+      <h3>Export your data</h3>
+      <p class="muted">Save everything as spreadsheet-ready files in an <code>exports</code> folder.</p>
+      <form method="post" action="/tools/export">
+        <label>Format</label>
+        <select name="fmt"><option value="csv">CSV (spreadsheet)</option><option value="json">JSON</option></select>
+        <button type="submit">Export</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Check current alerts</h3>
+      {% for a in alerts %}
+      <p class="{{ 'neg' if a.severity!='info' else 'muted' }}">• <strong>{{ a.severity|upper }}</strong> {{ a.message }}</p>
+      {% else %}<p class="muted">No anomalies detected. All clear.</p>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Cross-promotion targets</h3>
+    <p class="muted">Track other subreddits' self-promo rules so you don't break them. This only reminds you —
+       it never posts anywhere for you.</p>
+    <form method="post" action="/tools/add-target">
+      <div class="grid" style="gap:1rem;margin:0">
+        <div><label>Subreddit (no r/)</label><input name="name" required placeholder="WritingPrompts" /></div>
+        <div><label>Min days between promos</label><input name="min_days" type="number" min="0" placeholder="7" /></div>
+      </div>
+      <label>Notes on their rules</label>
+      <input name="rules" placeholder="1-in-10 self-promo ratio" />
+      <button type="submit">Save target</button>
+    </form>
+
+    {% if targets %}
+    <table style="margin-top:1rem">
+      <tr><th>Subreddit</th><th>Min days</th><th>Status</th></tr>
+      {% for t in targets %}
+      <tr><td>r/{{ t.name }}</td><td>{{ t.min_days_between_promos or "—" }}</td>
+        <td>{% if t.ok %}<span class="pos">OK to promote</span>{% else %}<span class="neg">{{ t.reason }}</span>{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </div>
+{% endblock %}

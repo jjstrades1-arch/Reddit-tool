@@ -31,17 +31,20 @@ shared core; each tool plugs in rather than living as a disconnected script.
 | | `alerts` | Flag MRR drops, churn spikes, and dead campaigns. |
 | | `export` | Dump funnel + metrics to CSV/JSON for spreadsheets/BI. |
 
-### The dashboard
+### The web control panel
 
-`redditsuite analytics dashboard` serves a single funnel view (and the click
-redirect) with panels for:
+`redditsuite analytics dashboard` serves a full click-everything web app (and the
+click redirect) at `http://127.0.0.1:8000`. No command line needed for daily use:
 
-- **Funnel stages** — posts → upvotes → clicks → conversions → patrons → MRR, with stage-to-stage rates.
-- **Anomaly banner** — live churn/MRR/dead-campaign alerts at the top.
-- **Patreon trend** + **churn & tier mix**.
-- **Best posting windows** heatmap (UTC weekday × hour) and **A/B title winners**.
-- **Clicks by campaign** and **attribution-confidence** breakdown.
-- **Comment-sentiment** strip with flagged high-value comments.
+- **Dashboard** — the funnel (posts → upvotes → clicks → conversions → patrons → MRR), an anomaly banner, Patreon trend, churn & tier mix, a best-posting-times heatmap, A/B title winners, clicks-by-campaign, attribution confidence, and a comment-sentiment strip.
+- **Chapters** — a form to schedule chapters and a "post what's due now" button.
+- **Patreon Links** — make trackable CTA links and copy the short URL into your posts.
+- **Polls** — create member polls, record votes, close them to reveal the winner, and get a teaser draft.
+- **Comments** — the high-value reply queue with suggested openers; mark them handled.
+- **Tools** — one-click refresh stats, find best posting times, export to CSV/JSON, and manage cross-promo targets.
+
+Windows users can skip the command line entirely — see `QUICKSTART.txt`
+(`setup.bat` then `start.bat`).
 
 ## Compliance, by design
 

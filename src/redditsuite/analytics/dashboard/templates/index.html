@@ -1,72 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reddit &rarr; Patreon Funnel</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background:#0f1115; color:#e6e6e6; }
-    h1 { font-size: 1.4rem; }
-    h3 { margin-top: 0; }
-    .funnel { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
-    .stage { background:#1b1f27; border:1px solid #2a2f3a; border-radius:12px; padding:1rem 1.4rem; min-width:140px; }
-    .stage .n { font-size:1.8rem; font-weight:700; }
-    .stage .l { color:#9aa4b2; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; }
-    .rate { color:#6ee7b7; font-size:.8rem; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
-    .card { background:#1b1f27; border:1px solid #2a2f3a; border-radius:12px; padding:1rem 1.4rem; }
-    table { width:100%; border-collapse:collapse; }
-    td, th { padding:.3rem 0; border-bottom:1px solid #2a2f3a; text-align:left; }
-    /* Alerts */
-    .alerts { margin:1rem 0; }
-    .alert { border-radius:10px; padding:.6rem 1rem; margin:.4rem 0; font-size:.9rem; }
-    .alert.critical { background:#3b1418; border:1px solid #7f1d1d; color:#fecaca; }
-    .alert.warning { background:#3a2f12; border:1px solid #92400e; color:#fde68a; }
-    .alert.info { background:#12263a; border:1px solid #1e40af; color:#bfdbfe; }
-    .ok { color:#6ee7b7; font-size:.9rem; }
-    /* Heatmap */
-    .heat { border-collapse:collapse; font-size:.65rem; }
-    .heat td { border:1px solid #161a22; width:14px; height:14px; padding:0; }
-    .heat th { color:#9aa4b2; font-weight:400; padding:1px 3px; border:none; }
-    /* Bars */
-    .bar { height:10px; border-radius:5px; background:#60a5fa; }
-    .barwrap { background:#2a2f3a; border-radius:5px; overflow:hidden; }
-    .muted { color:#9aa4b2; font-size:.8rem; }
-    .pos { color:#6ee7b7; } .neg { color:#fca5a5; }
-    @media (max-width:780px){ .grid{ grid-template-columns:1fr; } }
-  </style>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Dashboard — Reddit-Tool Suite{% endblock %}
+{% block content %}
   <h1>Reddit &rarr; Patreon Funnel <span class="muted">&mdash; r/{{ home_sub }}</span></h1>
 
-  <!-- Alert banner -->
-  <div class="alerts">
+  <!-- Anomaly banner -->
+  <div style="margin:1rem 0">
     {% for a in alerts %}
-    <div class="alert {{ a.severity }}"><strong>{{ a.severity|upper }}:</strong> {{ a.message }}</div>
+    <div class="flash err" style="margin:.4rem 0"><strong>{{ a.severity|upper }}:</strong> {{ a.message }}</div>
     {% else %}
-    <div class="ok">No anomalies detected. All clear.</div>
+    <div class="muted">No anomalies detected. All clear.</div>
     {% endfor %}
   </div>
 
   <!-- Funnel stages -->
-  <div class="funnel">
-    <div class="stage"><div class="n">{{ s.posts }}</div><div class="l">Posts</div></div>
-    <div class="stage"><div class="n">{{ s.total_upvotes }}</div><div class="l">Upvotes</div></div>
-    <div class="stage">
-      <div class="n">{{ s.clicks }}</div><div class="l">CTA Clicks</div>
-      <div class="rate">{{ "%.1f%%"|format(s.upvote_to_click * 100) }} of upvotes</div>
+  <div class="card">
+    <div style="display:flex; gap:1rem; flex-wrap:wrap">
+      <div><div style="font-size:1.8rem;font-weight:700">{{ s.posts }}</div><div class="muted">Posts</div></div>
+      <div><div style="font-size:1.8rem;font-weight:700">{{ s.total_upvotes }}</div><div class="muted">Upvotes</div></div>
+      <div><div style="font-size:1.8rem;font-weight:700">{{ s.clicks }}</div>
+           <div class="muted">CTA Clicks · <span class="pos">{{ "%.1f%%"|format(s.upvote_to_click*100) }}</span></div></div>
+      <div><div style="font-size:1.8rem;font-weight:700">{{ s.conversions }}</div>
+           <div class="muted">Conversions · <span class="pos">{{ "%.1f%%"|format(s.click_to_conversion*100) }}</span></div></div>
+      <div><div style="font-size:1.8rem;font-weight:700">{{ s.active_patrons }}</div><div class="muted">Active Patrons</div></div>
+      <div><div style="font-size:1.8rem;font-weight:700">${{ "%.2f"|format(s.mrr_cents/100) }}</div><div class="muted">MRR</div></div>
     </div>
-    <div class="stage">
-      <div class="n">{{ s.conversions }}</div><div class="l">Conversions</div>
-      <div class="rate">{{ "%.1f%%"|format(s.click_to_conversion * 100) }} of clicks</div>
-    </div>
-    <div class="stage"><div class="n">{{ s.active_patrons }}</div><div class="l">Active Patrons</div></div>
-    <div class="stage"><div class="n">${{ "%.2f"|format(s.mrr_cents / 100) }}</div><div class="l">MRR</div></div>
   </div>
 
-  <!-- Patreon trend + churn/tier mix -->
   <div class="grid">
     <div class="card">
       <h3>Patreon trend</h3>
@@ -79,58 +38,43 @@
         <tr><th>Tier</th><th style="text-align:right">Active patrons</th></tr>
         {% for title, n in patreon.tiers %}
         <tr><td>{{ title }}</td><td style="text-align:right">{{ n }}</td></tr>
-        {% else %}
-        <tr><td colspan="2" class="muted">No tier data yet.</td></tr>
-        {% endfor %}
+        {% else %}<tr><td colspan="2" class="muted">No tier data yet.</td></tr>{% endfor %}
       </table>
     </div>
   </div>
 
-  <!-- Growth: heatmap + A/B winners -->
   <div class="grid">
     <div class="card">
       <h3>Best posting windows (UTC)</h3>
       {% if heatmap.max > 0 %}
-      <table class="heat">
+      <table style="border-collapse:collapse; font-size:.65rem">
         <tr><th></th>{% for h in range(24) %}<th>{{ h }}</th>{% endfor %}</tr>
         {% for row in heatmap.grid %}
-        <tr>
-          <th>{{ days[loop.index0] }}</th>
-          {% for v in row %}
-          {% set intensity = (v / heatmap.max) if heatmap.max else 0 %}
-          <td title="{{ days[loop.index0] }} {{ '%.0f'|format(v) }}"
-              style="background: rgba(110,231,183,{{ '%.2f'|format(intensity) }})"></td>
+        <tr><th>{{ days[loop.index0] }}</th>
+          {% for v in row %}{% set i = (v/heatmap.max) if heatmap.max else 0 %}
+          <td style="width:14px;height:14px;border:1px solid #161a22;background:rgba(110,231,183,{{ '%.2f'|format(i) }})"></td>
           {% endfor %}
-        </tr>
-        {% endfor %}
+        </tr>{% endfor %}
       </table>
-      {% else %}
-      <p class="muted">Run <code>analytics</code> timing analysis to populate this.</p>
-      {% endif %}
+      {% else %}<p class="muted">Use Tools → "Find best posting times" to fill this in.</p>{% endif %}
     </div>
     <div class="card">
       <h3>A/B title winners</h3>
       <table>
-        <tr><th>Chapter</th><th>Winning title</th><th style="text-align:right">Engagement</th></tr>
+        <tr><th>Chapter</th><th>Winning title</th><th style="text-align:right">Score</th></tr>
         {% for w in ab %}
         <tr><td>{{ w.content_key }}</td><td>{{ w.text }}</td><td style="text-align:right">{{ w.engagement }}</td></tr>
-        {% else %}
-        <tr><td colspan="3" class="muted">No title experiments yet.</td></tr>
-        {% endfor %}
+        {% else %}<tr><td colspan="3" class="muted">No title experiments yet.</td></tr>{% endfor %}
       </table>
     </div>
   </div>
 
-  <!-- Conversion: campaigns + attribution confidence -->
   <div class="grid">
     <div class="card">
       <h3>Clicks by campaign</h3>
       <table>
-        {% for name, n in campaigns %}
-        <tr><td>{{ name }}</td><td style="text-align:right">{{ n }}</td></tr>
-        {% else %}
-        <tr><td colspan="2" class="muted">No clicks yet.</td></tr>
-        {% endfor %}
+        {% for name, n in campaigns %}<tr><td>{{ name }}</td><td style="text-align:right">{{ n }}</td></tr>
+        {% else %}<tr><td colspan="2" class="muted">No clicks yet.</td></tr>{% endfor %}
       </table>
     </div>
     <div class="card">
@@ -138,42 +82,31 @@
       {% set total = confidence.high + confidence.medium + confidence.low %}
       {% for label, count in [('High', confidence.high), ('Medium', confidence.medium), ('Low', confidence.low)] %}
       <p class="muted" style="margin:.4rem 0 .2rem">{{ label }} &mdash; {{ count }}</p>
-      <div class="barwrap"><div class="bar" style="width: {{ (100 * count / total) if total else 0 }}%"></div></div>
+      <div style="background:#2a2f3a;border-radius:5px;overflow:hidden">
+        <div style="height:10px;background:#60a5fa;width:{{ (100*count/total) if total else 0 }}%"></div></div>
       {% endfor %}
       {% if not total %}<p class="muted">No conversions attributed yet.</p>{% endif %}
     </div>
   </div>
 
-  <!-- Sentiment strip -->
   <div class="card">
-    <h3>Comment sentiment
-      <span class="{{ 'pos' if sentiment.avg >= 0 else 'neg' }}">(avg {{ sentiment.avg }})</span>
-    </h3>
+    <h3>Comment sentiment <span class="{{ 'pos' if sentiment.avg>=0 else 'neg' }}">(avg {{ sentiment.avg }})</span></h3>
     {% for c in sentiment.flagged %}
-    <p style="margin:.3rem 0">
-      <span class="{{ 'pos' if c.sentiment >= 0 else 'neg' }}">[{{ c.sentiment }}]</span>
-      <span class="muted">u/{{ c.author }}:</span> {{ c.body }}
-    </p>
-    {% else %}
-    <p class="muted">No flagged comments.</p>
-    {% endfor %}
+    <p style="margin:.3rem 0"><span class="{{ 'pos' if c.sentiment>=0 else 'neg' }}">[{{ c.sentiment }}]</span>
+      <span class="muted">u/{{ c.author }}:</span> {{ c.body }}</p>
+    {% else %}<p class="muted">No flagged comments.</p>{% endfor %}
   </div>
 
   <script>
     const trend = {{ trend_json | safe }};
     if (trend.labels.length) {
       new Chart(document.getElementById('trend'), {
-        type: 'line',
-        data: {
-          labels: trend.labels,
-          datasets: [
-            { label: 'MRR ($)', data: trend.mrr, borderColor:'#6ee7b7', tension:.3 },
-            { label: 'Patrons', data: trend.patrons, borderColor:'#60a5fa', tension:.3, yAxisID:'y1' }
-          ]
-        },
-        options: { scales: { y1: { position:'right', grid:{ drawOnChartArea:false } } } }
+        type:'line',
+        data:{ labels:trend.labels, datasets:[
+          { label:'MRR ($)', data:trend.mrr, borderColor:'#6ee7b7', tension:.3 },
+          { label:'Patrons', data:trend.patrons, borderColor:'#60a5fa', tension:.3, yAxisID:'y1' } ] },
+        options:{ scales:{ y1:{ position:'right', grid:{ drawOnChartArea:false } } } }
       });
     }
   </script>
-</body>
-</html>
+{% endblock %}

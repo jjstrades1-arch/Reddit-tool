@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Polls — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <h1>Member Polls</h1>
+  <p class="muted">Let your patrons steer the story. Create a poll, record their votes, then close it to
+     reveal the winner and draft a teaser for Reddit.</p>
+
+  <div class="card">
+    <h3>Create a poll</h3>
+    <form method="post" action="/polls/create">
+      <label>Question</label>
+      <input name="question" required placeholder="Which door does she open?" />
+      <label>Type</label>
+      <select name="kind">
+        <option value="plot">Plot direction</option>
+        <option value="naming">Character name / fate</option>
+        <option value="suggestion">From member suggestions</option>
+      </select>
+      <label>Options (one per line, at least two)</label>
+      <textarea name="options" required placeholder="The iron door&#10;The mirrored door"></textarea>
+      <button type="submit">Create poll</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Your polls</h3>
+    <table>
+      <tr><th>Question</th><th>Type</th><th>Status</th><th>Votes</th><th></th></tr>
+      {% for row in polls %}
+      <tr>
+        <td>{{ row.poll.question }}</td>
+        <td>{{ row.poll.kind.value }}</td>
+        <td><span class="pill">{{ row.poll.status.value }}</span></td>
+        <td>{{ row.votes }}</td>
+        <td><a href="/polls/{{ row.poll.id }}">open →</a></td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="muted">No polls yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Chapters — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <h1>Chapters</h1>
+  <p class="muted">Schedule a story chapter to post on r/{{ home_sub }}. Times are in UTC.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Schedule a chapter</h3>
+      <form method="post" action="/chapters/schedule">
+        <label>Title</label>
+        <input name="title" required placeholder="Chapter 12: The Gate" />
+        <label>Body (the chapter text / post body)</label>
+        <textarea name="body" placeholder="It began on a grey morning..."></textarea>
+        <div class="grid" style="gap:1rem; margin:0">
+          <div><label>Chapter number</label><input name="chapter" type="number" min="1" placeholder="12" /></div>
+          <div><label>Members' early access (hours)</label><input name="early_access_hours" type="number" min="0" value="48" /></div>
+        </div>
+        <label>Publish at (UTC)</label>
+        <input name="when" type="datetime-local" required />
+        <button type="submit">Schedule chapter</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Post anything that's due now</h3>
+      <p class="muted">Submits scheduled chapters whose time has arrived. Needs your Reddit keys in <code>.env</code>.</p>
+      <form method="post" action="/chapters/run-due">
+        <button type="submit">Post due chapters now</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Your chapters</h3>
+    <table>
+      <tr><th>#</th><th>Title</th><th>Status</th><th>Scheduled (UTC)</th><th>Link</th></tr>
+      {% for p in posts %}
+      <tr>
+        <td>{{ p.chapter_no if p.chapter_no is not none else "—" }}</td>
+        <td>{{ p.title }}</td>
+        <td><span class="pill">{{ p.status.value }}</span></td>
+        <td>{{ p.scheduled_at.strftime("%Y-%m-%d %H:%M") if p.scheduled_at else "—" }}</td>
+        <td>{% if p.permalink %}<a href="https://reddit.com{{ p.permalink }}" target="_blank">view</a>{% else %}—{% endif %}</td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="muted">No chapters yet. Schedule one above.</td></tr>{% endfor %}
+    </table>
+  </div>
+{% endblock %}

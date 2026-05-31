@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Poll — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <p><a href="/polls">← All polls</a></p>
+  <h1>{{ poll.question }}</h1>
+  <p class="muted">{{ poll.kind.value }} · <span class="pill">{{ poll.status.value }}</span></p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Results</h3>
+      {% set total = results | sum(attribute='1') %}
+      {% for option, count in results %}
+      <p class="muted" style="margin:.5rem 0 .2rem">{{ option.label }} — <strong>{{ count }}</strong></p>
+      <div style="background:#2a2f3a;border-radius:5px;overflow:hidden">
+        <div style="height:12px;background:#2563eb;width:{{ (100*count/total) if total else 0 }}%"></div></div>
+      {% endfor %}
+      {% if not total %}<p class="muted">No votes yet.</p>{% endif %}
+    </div>
+
+    <div class="card">
+      {% if poll.status.value == 'open' %}
+      <h3>Record a vote</h3>
+      <p class="muted">Enter votes you collected from your patrons. Leave the name blank to just add one tally.</p>
+      <form method="post" action="/polls/{{ poll.id }}/vote">
+        <label>Option</label>
+        <select name="option_id">
+          {% for option, count in results %}<option value="{{ option.id }}">{{ option.label }}</option>{% endfor %}
+        </select>
+        <label>Patron name or ID (optional)</label>
+        <input name="member" placeholder="e.g. a patron's username" />
+        <button type="submit">Add vote</button>
+      </form>
+      <form method="post" action="/polls/{{ poll.id }}/close" style="margin-top:1rem">
+        <button type="submit" class="danger">Close poll &amp; reveal winner</button>
+      </form>
+      {% else %}
+      <h3>Winner</h3>
+      <p style="font-size:1.2rem"><strong>{{ winner_label }}</strong></p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if teaser %}
+  <div class="card">
+    <h3>Teaser draft for Reddit</h3>
+    <p class="muted">Review and edit this, then post it yourself. (It never asks for upvotes.)</p>
+    <textarea readonly style="min-height:200px">{{ teaser }}</textarea>
+  </div>
+  {% endif %}
+{% endblock %}

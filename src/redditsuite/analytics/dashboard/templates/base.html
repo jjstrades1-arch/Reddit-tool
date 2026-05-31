@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Reddit-Tool Suite{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; background:#0f1115; color:#e6e6e6; }
+    a { color:#8ab4ff; text-decoration:none; }
+    /* Top nav */
+    nav { display:flex; gap:.25rem; flex-wrap:wrap; align-items:center;
+          background:#161a22; border-bottom:1px solid #2a2f3a; padding:.6rem 1rem; position:sticky; top:0; z-index:5; }
+    nav .brand { font-weight:700; margin-right:1rem; color:#e6e6e6; }
+    nav a { padding:.45rem .8rem; border-radius:8px; color:#c7cdd6; }
+    nav a:hover { background:#222835; }
+    nav a.active { background:#2563eb; color:#fff; }
+    main { padding: 1.5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    h1 { font-size:1.4rem; } h3 { margin-top:0; }
+    .muted { color:#9aa4b2; font-size:.85rem; }
+    /* Cards & grid */
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+    .card { background:#1b1f27; border:1px solid #2a2f3a; border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1.5rem; }
+    @media (max-width:780px){ .grid{ grid-template-columns:1fr; } main{ padding:1rem; } }
+    /* Forms */
+    label { display:block; font-size:.85rem; color:#c7cdd6; margin:.6rem 0 .2rem; }
+    input, textarea, select {
+      width:100%; padding:.55rem .7rem; border-radius:8px; border:1px solid #2a2f3a;
+      background:#0f1115; color:#e6e6e6; font-size:.95rem; font-family:inherit; }
+    textarea { min-height:90px; resize:vertical; }
+    button, .btn {
+      display:inline-block; margin-top:.8rem; padding:.55rem 1.1rem; border:none; border-radius:8px;
+      background:#2563eb; color:#fff; font-size:.95rem; cursor:pointer; }
+    button:hover, .btn:hover { background:#1d4ed8; }
+    button.secondary { background:#374151; } button.secondary:hover { background:#4b5563; }
+    button.danger { background:#b91c1c; } button.danger:hover { background:#991b1b; }
+    .inline { display:inline; }
+    /* Tables */
+    table { width:100%; border-collapse:collapse; }
+    td, th { padding:.45rem .3rem; border-bottom:1px solid #2a2f3a; text-align:left; vertical-align:top; }
+    th { color:#9aa4b2; font-weight:600; font-size:.8rem; }
+    code { background:#0f1115; border:1px solid #2a2f3a; border-radius:6px; padding:.1rem .4rem; }
+    /* Flash messages */
+    .flash { padding:.7rem 1rem; border-radius:10px; margin:1rem 2rem 0; }
+    .flash.ok { background:#10331f; border:1px solid #15803d; color:#bbf7d0; }
+    .flash.err { background:#3b1418; border:1px solid #7f1d1d; color:#fecaca; }
+    .pos { color:#6ee7b7; } .neg { color:#fca5a5; }
+    .pill { font-size:.7rem; padding:.1rem .5rem; border-radius:999px; background:#374151; color:#e5e7eb; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">📖 Reddit-Tool</span>
+    {% set p = active|default('') %}
+    <a href="/" class="{{ 'active' if p=='dashboard' }}">Dashboard</a>
+    <a href="/chapters" class="{{ 'active' if p=='chapters' }}">Chapters</a>
+    <a href="/links" class="{{ 'active' if p=='links' }}">Patreon Links</a>
+    <a href="/polls" class="{{ 'active' if p=='polls' }}">Polls</a>
+    <a href="/comments" class="{{ 'active' if p=='comments' }}">Comments</a>
+    <a href="/tools" class="{{ 'active' if p=='tools' }}">Tools</a>
+  </nav>
+
+  {% if msg %}<div class="flash ok">{{ msg }}</div>{% endif %}
+  {% if error %}<div class="flash err">{{ error }}</div>{% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

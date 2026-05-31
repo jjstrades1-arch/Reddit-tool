@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Comments — Reddit-Tool Suite{% endblock %}
+{% block content %}
+  <h1>Comments worth a reply</h1>
+  <p class="muted">High-value reader comments the tool flagged. Replying yourself builds community — these are
+     suggestions and drafts only; you always send the real reply on Reddit.</p>
+
+  <div class="card">
+    {% for c in queue %}
+    <div style="border-bottom:1px solid #2a2f3a; padding:.8rem 0">
+      <p style="margin:.2rem 0">
+        <span class="{{ 'pos' if (c.sentiment or 0)>=0 else 'neg' }}">[{{ "%.2f"|format(c.sentiment or 0) }}]</span>
+        <span class="muted">u/{{ c.author }} · score {{ c.score }}</span>
+      </p>
+      <p style="margin:.3rem 0">{{ c.body }}</p>
+      <p class="muted" style="margin:.3rem 0"><em>Suggested opener:</em> {{ c.draft }}</p>
+      <form method="post" action="/comments/{{ c.id }}/handled" class="inline">
+        <button type="submit" class="secondary">Mark handled</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="muted">Nothing pending. Pull new comments from Tools → "Refresh stats" once your Reddit keys are set.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

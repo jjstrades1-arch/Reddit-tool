@@ -19,6 +19,7 @@ env/
 *.sqlite
 *.sqlite3
 data/
+exports/
 
 # Tooling
 .pytest_cache/
