@@ -55,6 +55,7 @@ _CLI_MODULES = {
     analytics_app: (
         "redditsuite.analytics.collectors",
         "redditsuite.analytics.public_collect",
+        "redditsuite.analytics.patreon_snapshot",
         "redditsuite.analytics.alerts",
         "redditsuite.analytics.export",
     ),

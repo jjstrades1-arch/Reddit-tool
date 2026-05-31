@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             "links",
             links=rows,
             snippets=snippets,
-            default_patreon="",
+            default_patreon=get_settings().patreon_page_url,
         )
 
     @app.post("/links/create")
@@ -480,6 +480,7 @@ def create_app() -> FastAPI:
             "reddit_password": bool(cfg.reddit_password),
             "patreon": bool(cfg.patreon_access_token),
         }
+        cur["patreon_page_url"] = cfg.patreon_page_url
         return render(request, "settings.html", "settings", cur=cur, set=which)
 
     @app.post("/settings/save")
@@ -513,6 +514,49 @@ def create_app() -> FastAPI:
             update_env(updates)
             _gs.cache_clear()  # pick up the new values on the next request
         return back("/settings", msg="Settings saved.")
+
+    @app.post("/settings/patreon-fetch")
+    def settings_patreon_fetch(patreon_url: str = Form(...)):
+        from ...analytics.patreon_snapshot import snapshot_from_public
+        from ...core.config import get_settings as _gs
+        from ...core.envfile import update_env
+        from ...core.patreon_public import PatreonPublicError
+
+        update_env({"PATREON_PAGE_URL": patreon_url.strip()})
+        _gs.cache_clear()
+        try:
+            with session_scope() as session:
+                m = snapshot_from_public(session, patreon_url)
+        except PatreonPublicError as exc:
+            return back("/settings", error=str(exc))
+        except Exception as exc:  # noqa: BLE001
+            return back("/settings", error=f"Couldn't reach Patreon: {exc}")
+        return back("/settings", msg=f"Got it — {m.patron_count} patrons from your public page.")
+
+    @app.post("/settings/patreon-manual")
+    def settings_patreon_manual(
+        patreon_url: str = Form(""),
+        patron_count: str = Form("0"),
+        monthly_dollars: str = Form("0"),
+    ):
+        from ...analytics.patreon_snapshot import record_manual_snapshot
+        from ...core.config import get_settings as _gs
+        from ...core.envfile import update_env
+
+        if patreon_url.strip():
+            update_env({"PATREON_PAGE_URL": patreon_url.strip()})
+            _gs.cache_clear()
+        try:
+            patrons = int(patron_count or 0)
+            cents = int(round(float(monthly_dollars or 0) * 100))
+        except ValueError:
+            return back("/settings", error="Please enter numbers for patrons and income.")
+        with session_scope() as session:
+            m = record_manual_snapshot(session, patron_count=patrons, mrr_cents=cents)
+        return back(
+            "/settings",
+            msg=f"Saved snapshot: {m.patron_count} patrons, ${m.mrr_cents / 100:.2f}/mo.",
+        )
 
     return app
 

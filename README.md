@@ -63,6 +63,19 @@ This uses read-only public endpoints at low volume with a descriptive
 user-agent (`core/reddit_public.py`). Connecting real Reddit keys in **Settings**
 adds full automation (hands-off posting and scheduled stat collection).
 
+### Patreon without a token
+
+The **Settings** page has a "Patreon — quick setup (no token)" card with two
+options, both of which populate the revenue dashboard:
+
+- **Fetch count** — reads your **public** patron count from your Patreon page
+  (`core/patreon_public.py`). Patreon often blocks bots, so this may fail.
+- **Manual entry** — type the patron count and monthly income you see on your own
+  Patreon dashboard. Always works; records a snapshot (`analytics/patreon_snapshot.py`).
+
+A real Patreon access token (Settings) still adds automatic member sync, churn,
+and tier-mix detail.
+
 ## Compliance, by design
 
 Reddit and Patreon prohibit spam, vote manipulation and fake engagement. Those

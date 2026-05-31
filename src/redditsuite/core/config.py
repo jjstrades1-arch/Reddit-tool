@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     patreon_client_secret: str = ""
     patreon_access_token: str = ""
     patreon_refresh_token: str = ""
+    # Your public Patreon page (used to prefill links and the no-token count).
+    patreon_page_url: str = ""
 
     # --- Compliance guardrails ---
     min_post_spacing_minutes: int = 180

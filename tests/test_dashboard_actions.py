@@ -200,6 +200,40 @@ def test_settings_blank_secret_is_not_written(settings, session, tmp_path, monke
     assert "REDDIT_CLIENT_SECRET" not in env  # blank secrets are skipped
 
 
+def test_patreon_manual_snapshot_via_form(settings, session, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    client = _client()
+    r = client.post(
+        "/settings/patreon-manual",
+        data={
+            "patreon_url": "https://patreon.com/me",
+            "patron_count": "150",
+            "monthly_dollars": "600",
+        },
+    )
+    assert r.status_code == 200
+    assert "150 patrons" in r.text
+
+    # The snapshot should now drive the dashboard funnel numbers.
+    api = client.get("/api/funnel").json()
+    assert api["active_patrons"] == 150
+    assert api["mrr_cents"] == 60000
+
+
+def test_patreon_fetch_handles_block_gracefully(settings, session, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    import redditsuite.core.patreon_public as pp
+
+    def boom(_url):
+        raise pp.PatreonPublicError("Patreon blocked the automated request.")
+
+    monkeypatch.setattr(pp, "fetch_public_campaign", boom)
+    client = _client()
+    r = client.post("/settings/patreon-fetch", data={"patreon_url": "https://patreon.com/x"})
+    assert r.status_code == 200
+    assert "blocked" in r.text.lower()
+
+
 def test_envfile_preserves_comments_and_keys(tmp_path):
     from redditsuite.core import envfile
 
