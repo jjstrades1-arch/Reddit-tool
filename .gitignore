@@ -1,0 +1,33 @@
+# Secrets / config
+.env
+.env.local
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Databases / local data
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

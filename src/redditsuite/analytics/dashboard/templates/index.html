@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reddit &rarr; Patreon Funnel</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background:#0f1115; color:#e6e6e6; }
+    h1 { font-size: 1.4rem; }
+    .funnel { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+    .stage { background:#1b1f27; border:1px solid #2a2f3a; border-radius:12px; padding:1rem 1.4rem; min-width:140px; }
+    .stage .n { font-size:1.8rem; font-weight:700; }
+    .stage .l { color:#9aa4b2; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; }
+    .rate { color:#6ee7b7; font-size:.8rem; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; }
+    .card { background:#1b1f27; border:1px solid #2a2f3a; border-radius:12px; padding:1rem 1.4rem; }
+    table { width:100%; border-collapse:collapse; }
+    td { padding:.3rem 0; border-bottom:1px solid #2a2f3a; }
+    @media (max-width:780px){ .grid{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Reddit &rarr; Patreon Funnel</h1>
+
+  <div class="funnel">
+    <div class="stage"><div class="n">{{ s.posts }}</div><div class="l">Posts</div></div>
+    <div class="stage"><div class="n">{{ s.total_upvotes }}</div><div class="l">Upvotes</div></div>
+    <div class="stage">
+      <div class="n">{{ s.clicks }}</div><div class="l">CTA Clicks</div>
+      <div class="rate">{{ "%.1f%%"|format(s.upvote_to_click * 100) }} of upvotes</div>
+    </div>
+    <div class="stage">
+      <div class="n">{{ s.conversions }}</div><div class="l">Conversions</div>
+      <div class="rate">{{ "%.1f%%"|format(s.click_to_conversion * 100) }} of clicks</div>
+    </div>
+    <div class="stage"><div class="n">{{ s.active_patrons }}</div><div class="l">Active Patrons</div></div>
+    <div class="stage"><div class="n">${{ "%.2f"|format(s.mrr_cents / 100) }}</div><div class="l">MRR</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Patreon trend</h3>
+      <canvas id="trend"></canvas>
+    </div>
+    <div class="card">
+      <h3>Clicks by campaign</h3>
+      <table>
+        {% for name, n in campaigns %}
+        <tr><td>{{ name }}</td><td style="text-align:right">{{ n }}</td></tr>
+        {% else %}
+        <tr><td colspan="2">No clicks yet.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const trend = {{ trend_json | safe }};
+    if (trend.labels.length) {
+      new Chart(document.getElementById('trend'), {
+        type: 'line',
+        data: {
+          labels: trend.labels,
+          datasets: [
+            { label: 'MRR ($)', data: trend.mrr, borderColor:'#6ee7b7', tension:.3 },
+            { label: 'Patrons', data: trend.patrons, borderColor:'#60a5fa', tension:.3, yAxisID:'y1' }
+          ]
+        },
+        options: { scales: { y1: { position:'right', grid:{ drawOnChartArea:false } } } }
+      });
+    }
+  </script>
+</body>
+</html>
